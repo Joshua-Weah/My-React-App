@@ -2,16 +2,20 @@ import { useState, useEffect } from 'react'
 
 function App() {
   const [repos, setRepos] = useState([])
+  const [profile, setProfile] = useState(null)
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
   const [filter, setFilter] = useState('All')
   const [sort, setSort] = useState('updated')
 
   useEffect(() => {
-    fetch('/api/repos')
-      .then(res => res.json())
-      .then(data => { setRepos(data); setLoading(false) })
-      .catch(err => { setError(err.message); setLoading(false) })
+    Promise.all([
+      fetch('/api/repos').then(res => res.json()),
+      fetch('/api/profile').then(res => res.json())
+    ]).then(([repoData, profileData]) => {
+      setRepos(repoData)
+      setProfile(profileData)
+      setLoading(false)
+    })
   }, [])
 
   const languages = ['All', ...new Set(repos.map(r => r.language).filter(Boolean))]
@@ -22,14 +26,25 @@ function App() {
       ? b.stars - a.stars
       : new Date(b.updatedAt) - new Date(a.updatedAt))
 
-  if (loading) return <div className="status">Loading repos...</div>
-  if (error) return <div className="status">Error: {error}</div>
+  if (loading) return <div className="status">Loading...</div>
 
   return (
     <div className="app">
       <header>
-        <h1>Joshua Weah</h1>
-        <p>GitHub Portfolio</p>
+        <img src={profile.avatar} alt={profile.name} className="avatar" />
+        <div className="profile-info">
+          <h1>{profile.name}</h1>
+          {profile.bio && <p className="bio">{profile.bio}</p>}
+          <div className="profile-stats">
+            {profile.location && <span>📍 {profile.location}</span>}
+            <span>👥 {profile.followers} followers</span>
+            <span>📦 {profile.publicRepos} repos</span>
+          </div>
+          <div className="profile-links">
+            <a href={profile.url} target="_blank" rel="noreferrer">GitHub</a>
+            <a href="https://www.linkedin.com/in/joshuaweah" target="_blank" rel="noreferrer">LinkedIn</a>
+          </div>
+        </div>
       </header>
 
       <div className="controls">

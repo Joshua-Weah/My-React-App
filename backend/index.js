@@ -41,4 +41,31 @@ app.get('/api/repos', async (req, res) => {
   }
 });
 
+app.get('/api/profile', async (req, res) => {
+    try {
+        const profileRes = await fetch(
+            `https://api.github.com/users/${process.env.GITHUB_USERNAME}`,
+            {
+                headers : {
+                    Authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
+                    Accept: 'application/vnd.github.v3+json'
+                }
+            }
+        )
+        if (!profileRes.ok) throw new Error('Github API error')
+            const data = await profileRes.json()
+        res.json({
+            name: data.name,
+            bio: data.bio,
+            avatar: data.avatar_url,
+            followers: data.followers,
+            following: data.following,
+            publicRepos: data.public_repos,
+            location: data.location,
+            url: data.html_url
+        })
+    }   catch (err) {
+        res.status(500).json({ error: err.message})
+    }
+})
 app.listen(3000, () => console.log('API running on http://localhost:3000'));
