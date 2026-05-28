@@ -9,11 +9,14 @@ function App() {
 
   useEffect(() => {
     Promise.all([
-      fetch(`${import.meta.env.VITE_API_URL}/api/repos`),
-      fetch(`${import.meta.env.VITE_API_URL}/api/profile`)
+      fetch(`${import.meta.env.VITE_API_URL}/api/repos`).then(res => res.json()),
+      fetch(`${import.meta.env.VITE_API_URL}/api/profile`).then(res => res.json())
     ]).then(([repoData, profileData]) => {
-      setRepos(repoData)
-      setProfile(profileData)
+      setRepos(Array.isArray(repoData) ? repoData : [])
+      setProfile(profileData.name ? profileData : null)
+      setLoading(false)
+    }).catch(err => {
+      console.error(err)
       setLoading(false)
     })
   }, [])
@@ -27,7 +30,7 @@ function App() {
       : new Date(b.updatedAt) - new Date(a.updatedAt))
 
   if (loading) return <div className="status">Loading...</div>
-
+if (!profile) return <div className="status">Could not load profile — try refreshing.</div>
   return (
     <div className="app">
       <header>
