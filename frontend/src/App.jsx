@@ -9,8 +9,8 @@ function App() {
 
   useEffect(() => {
     Promise.all([
-      fetch('/api/repos').then(res => res.json()),
-      fetch('/api/profile').then(res => res.json())
+      fetch(`${import.meta.env.VITE_API_URL}/api/repos`),
+      fetch(`${import.meta.env.VITE_API_URL}/api/profile`)
     ]).then(([repoData, profileData]) => {
       setRepos(repoData)
       setProfile(profileData)
